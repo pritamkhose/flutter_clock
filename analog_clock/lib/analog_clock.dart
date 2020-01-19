@@ -4,14 +4,15 @@
 
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
 
-import 'container_hand.dart';
 import 'drawn_hand.dart';
+import 'clock_dial.dart';
 
 /// Total distance traveled by a second or a minute hand, each second or minute,
 /// respectively.
@@ -34,11 +35,28 @@ class AnalogClock extends StatefulWidget {
 
 class _AnalogClockState extends State<AnalogClock> {
   var _now = DateTime.now();
-  var _temperature = '';
-  var _temperatureRange = '';
-  var _condition = '';
-  var _location = '';
   Timer _timer;
+  var dateStr = '';
+  var _weatherImg = 'assets/sunny.png';
+  final color_list_light = [
+    0xFF1abc9c,
+    0xFF2ecc71,
+    0xFF3498db,
+    0xFF673AB7,
+    0xFFC74EA6,
+    0xFFCC66FF,
+    0xFF8BC34A,
+  ];
+  final color_list_dark = [
+    0xFF333300,
+    0xFF424242,
+    0xFF4E342E,
+    0xFF3E2723,
+    0xFF57575,
+    0xFF455A64,
+    0xFF37474F,
+  ];
+  var _backgroundColorCount = 0;
 
   @override
   void initState() {
@@ -67,22 +85,26 @@ class _AnalogClockState extends State<AnalogClock> {
 
   void _updateModel() {
     setState(() {
-      _temperature = widget.model.temperatureString;
-      _temperatureRange = '(${widget.model.low} - ${widget.model.highString})';
-      _condition = widget.model.weatherString;
-      _location = widget.model.location;
+      _weatherImg =
+          'assets/' + this.getWeatherIcon(widget.model.weatherString) + '.png';
     });
   }
 
   void _updateTime() {
     setState(() {
       _now = DateTime.now();
+      dateStr = DateFormat('E dd/MM/yyyy aa').format(_now);
       // Update once per second. Make sure to do it at the beginning of each
       // new second, so that the clock is accurate.
       _timer = Timer(
         Duration(seconds: 1) - Duration(milliseconds: _now.millisecond),
         _updateTime,
       );
+      _backgroundColorCount =
+          (int.parse(DateFormat('s').format(_now)) / 10).round();
+      if (_backgroundColorCount == 6) {
+        _backgroundColorCount = 0;
+      }
     });
   }
 
@@ -102,28 +124,30 @@ class _AnalogClockState extends State<AnalogClock> {
             // Minute hand.
             highlightColor: Color(0xFF8AB4F8),
             // Second hand.
-            accentColor: Color(0xFF669DF6),
-            backgroundColor: Color(0xFFD2E3FC),
+            accentColor: Colors.red,
+            backgroundColor: Color(0x66D2E3FC), //Colors.white
+            cardColor: Colors.amber,
+            dividerColor: Colors.blue,
+            dialogBackgroundColor: Colors.redAccent,
+            selectedRowColor: Colors.red,
           )
         : Theme.of(context).copyWith(
             primaryColor: Color(0xFFD2E3FC),
             highlightColor: Color(0xFF4285F4),
-            accentColor: Color(0xFF8AB4F8),
+            accentColor: Colors.red,
             backgroundColor: Color(0xFF3C4043),
+            cardColor: Colors.amberAccent,
+            dividerColor: Colors.red,
+            dialogBackgroundColor: Colors.blueGrey,
+            selectedRowColor: Colors.grey,
           );
 
     final time = DateFormat.Hms().format(DateTime.now());
-    final weatherInfo = DefaultTextStyle(
-      style: TextStyle(color: customTheme.primaryColor),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(_temperature),
-          Text(_temperatureRange),
-          Text(_condition),
-          Text(_location),
-        ],
-      ),
+
+    var defaultSmallStyle = TextStyle(
+      color: customTheme
+          .cardColor, //((customTheme.brightness.toString() == 'light') ? Colors.red : Colors.amberAccent),
+      fontSize: 16,
     );
 
     return Semantics.fromProperties(
@@ -132,50 +156,175 @@ class _AnalogClockState extends State<AnalogClock> {
         value: time,
       ),
       child: Container(
-        color: customTheme.backgroundColor,
-        child: Stack(
-          children: [
-            // Example of a hand drawn with [CustomPainter].
-            DrawnHand(
-              color: customTheme.accentColor,
-              thickness: 4,
-              size: 1,
-              angleRadians: _now.second * radiansPerTick,
-            ),
-            DrawnHand(
-              color: customTheme.highlightColor,
-              thickness: 16,
-              size: 0.9,
-              angleRadians: _now.minute * radiansPerTick,
-            ),
-            // Example of a hand drawn with [Container].
-            ContainerHand(
-              color: Colors.transparent,
-              size: 0.5,
-              angleRadians: _now.hour * radiansPerHour +
-                  (_now.minute / 60) * radiansPerHour,
-              child: Transform.translate(
-                offset: Offset(0.0, -60.0),
+//        color: customTheme.backgroundColor,
+        decoration: new BoxDecoration(
+          gradient: new LinearGradient(
+              colors: [
+                Color(customTheme.brightness.toString() == 'Brightness.dark'
+                    ? color_list_dark[_backgroundColorCount]
+                    : color_list_light[_backgroundColorCount]),
+                Color(customTheme.brightness.toString() == 'Brightness.dark'
+                    ? color_list_dark[_backgroundColorCount + 1]
+                    : color_list_light[_backgroundColorCount + 1]),
+              ],
+              begin: FractionalOffset.topLeft,
+              end: FractionalOffset.bottomRight,
+              stops: [0.2, 0.8],
+              tileMode: TileMode.clamp),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+          ),
+          child: Stack(
+            children: [
+              // Example of a hand drawn with [Container].
+              // Minute Hand
+              DrawnHand(
+                color: customTheme.primaryColor,
+                thickness: 5,
+                size: 0.58,
+                angleRadians: _now.hour * radiansPerHour +
+                    (_now.minute / 60) * radiansPerHour,
+              ),
+              // Example of a hand drawn with [CustomPainter].
+              // Hour Hand
+              DrawnHand(
+                color: customTheme.highlightColor,
+                thickness: 9,
+                size: 0.48,
+                angleRadians: _now.minute * radiansPerTick,
+              ),
+              //Second hand
+              DrawnHand(
+                color: customTheme.accentColor,
+                thickness: 3,
+                size: 0.68,
+                angleRadians: _now.second * radiansPerTick,
+              ),
+              Center(
                 child: Container(
-                  width: 32,
-                  height: 150,
+                  width: 16,
+                  height: 16,
                   decoration: BoxDecoration(
-                    color: customTheme.primaryColor,
+                    shape: BoxShape.circle,
+                    color: Colors.redAccent,
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              left: 0,
-              bottom: 0,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: weatherInfo,
+              new Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                padding: const EdgeInsets.all(10.0),
+                child: new CustomPaint(
+                  painter: new ClockDialPainter(
+                      customTheme.dialogBackgroundColor,
+                      customTheme.selectedRowColor),
+                ),
               ),
-            ),
-          ],
+              Positioned(
+                  left: 5,
+                  bottom: 5,
+                  child: Text(dateStr, style: defaultSmallStyle)),
+              //Weather Info
+              Positioned(
+                right: 5,
+                bottom: 5,
+                child: Row(children: <Widget>[
+                  Image.asset(
+                    'assets/iconfinder_location_115718.png',
+                    fit: BoxFit.cover,
+                    width: 18,
+                    height: 18,
+                    color: customTheme.dividerColor,
+                  ),
+                  Text(' ' + widget.model.location, style: defaultSmallStyle),
+                ]),
+              ),
+              Positioned(
+                top: 5,
+                left: 5,
+                child: Row(children: <Widget>[
+                  Image.asset(
+                    'assets/iconfinder_Thermometer_Warm_3741363.png',
+                    fit: BoxFit.cover,
+                    width: 18,
+                    height: 18,
+                    color: customTheme.dividerColor,
+                  ),
+                  Text(
+                      ' ' +
+                          widget.model.temperature.toString() +
+                          (widget.model.unit == TemperatureUnit.celsius
+                              ? ' °C '
+                              : ' °F '
+                          // widget.model.weatherString + ' ' +
+                          ),
+                      style: defaultSmallStyle),
+                  Image.asset(
+                    _weatherImg,
+                    fit: BoxFit.cover,
+                    width: 18,
+                    height: 18,
+                    color: customTheme.dividerColor,
+                  ),
+                ]),
+              ),
+              Positioned(
+                top: 5,
+                right: 5,
+                child: Row(children: <Widget>[
+                  Image.asset(
+                    'assets/iconfinder_Thermometer_Cold_3741365.png',
+                    fit: BoxFit.cover,
+                    width: 18,
+                    height: 18,
+                    color: customTheme.dividerColor,
+                  ),
+                  Text(' ' + widget.model.lowString + ' ',
+                      style: defaultSmallStyle),
+                  Image.asset(
+                    'assets/iconfinder_Thermometer_Hot_3741361.png',
+                    fit: BoxFit.cover,
+                    width: 18,
+                    height: 18,
+                    color: customTheme.dividerColor,
+                  ),
+                  Text(' ' + widget.model.highString, style: defaultSmallStyle),
+                ]),
+              )
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Color getContrastColor(Color _color) {
+    Color y = Color.fromARGB((_color.alpha), (255 - _color.red),
+        (255 - _color.blue), (255 - _color.green));
+    return y;
+  }
+
+  String getWeatherIcon(String _weather) {
+    var _aweather = '';
+    if ('snowy' == _weather) {
+      _aweather = 'iconfinder_Sunny_3741356';
+    } else if ('cloudy' == _weather) {
+      _aweather = 'iconfinder_Light_Snow_3741353';
+    } else if ('foggy' == _weather) {
+      _aweather = 'iconfinder_Foggy_3741362';
+    } else if ('rainy' == _weather) {
+      _aweather = 'iconfinder_Moderate_Rain_3741351';
+    } else if ('cloudy' == _weather) {
+      _aweather = 'iconfinder_Light_Snow_3741353';
+    } else if ('thunderstorm' == _weather) {
+      _aweather = 'iconfinder_Thunder_3741360';
+    } else if ('snowy' == _weather) {
+      _aweather = 'iconfinder_Snow_3741358';
+    } else {
+      _aweather = 'iconfinder_Sunny_3741356';
+    }
+    return _aweather;
   }
 }

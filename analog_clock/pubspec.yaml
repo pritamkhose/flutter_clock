@@ -18,3 +18,16 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/iconfinder_location_115718.png
+    - assets/iconfinder_Foggy_3741362.png
+    - assets/iconfinder_Light_Snow_3741353.png
+    - assets/iconfinder_location_115718.png
+    - assets/iconfinder_Moderate_Rain_3741351.png
+    - assets/iconfinder_Snow_3741358.png
+    - assets/iconfinder_Sunny_3741356.png
+    - assets/iconfinder_Thermometer_Cold_3741365.png
+    - assets/iconfinder_Thermometer_Hot_3741361.png
+    - assets/iconfinder_Thermometer_Warm_3741363.png
+    - assets/iconfinder_Thunder_3741360.png
+    - assets/iconfinder_Windy_3741354.png

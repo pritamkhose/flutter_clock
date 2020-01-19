@@ -44,27 +44,7 @@ class _DigitalClockState extends State<DigitalClock> {
   DateTime _dateTime = DateTime.now();
   Timer _timer;
   var _weatherImg = '';
-//  var color_list = [];
-
-  static var color_list_light1 = [
-    Color(0xFF1abc9c),
-    Color(0xFF2ecc71),
-    Color(0xFF3498db),
-    Color(0xFF673AB7),
-    Color(0xFFC74EA6),
-    Color(0xFFCC66FF),
-    Color(0xFF8BC34A),
-  ];
-  static var color_list_dark1 = [
-    Color(0xFF333300),
-    Color(0xFF424242),
-    Color(0xFF4E342E),
-    Color(0xFF3E2723),
-    Color(0xFF57575),
-    Color(0xFF455A64),
-    Color(0xFF37474F),
-  ];
-  final color_list_light = [
+  final colorListLight = [
     0xFF1abc9c,
     0xFF2ecc71,
     0xFF3498db,
@@ -73,7 +53,7 @@ class _DigitalClockState extends State<DigitalClock> {
     0xFFCC66FF,
     0xFF8BC34A,
   ];
-  final color_list_dark = [
+  final colorListDark = [
     0xFF333300,
     0xFF424242,
     0xFF4E342E,
@@ -188,11 +168,11 @@ class _DigitalClockState extends State<DigitalClock> {
         gradient: new LinearGradient(
             colors: [
               Color(colors[_Element.theme].toString() == 'dark'
-                  ? color_list_dark[_backgroundColorCount]
-                  : color_list_light[_backgroundColorCount]),
+                  ? colorListDark[_backgroundColorCount]
+                  : colorListLight[_backgroundColorCount]),
               Color(colors[_Element.theme].toString() == 'dark'
-                  ? color_list_dark[_backgroundColorCount + 1]
-                  : color_list_light[_backgroundColorCount + 1]),
+                  ? colorListDark[_backgroundColorCount + 1]
+                  : colorListLight[_backgroundColorCount + 1]),
             ],
             begin: FractionalOffset.topLeft,
             end: FractionalOffset.bottomRight,
@@ -284,12 +264,6 @@ class _DigitalClockState extends State<DigitalClock> {
     );
   }
 
-  Color getContrastColor(Color _color) {
-    Color y = Color.fromARGB((_color.alpha), (255 - _color.red),
-        (255 - _color.blue), (255 - _color.green));
-    return y;
-  }
-
   String getWeatherIcon(String _weather) {
     var _aweather;
     if ('snowy' == _weather) {
@@ -312,10 +286,4 @@ class _DigitalClockState extends State<DigitalClock> {
     return _aweather;
   }
 
-  int hexToColor(String hex) {
-    hex = hex.replaceFirst('#', '');
-    hex = hex.length == 6 ? 'ff' + hex : hex;
-    int val = int.parse(hex, radix: 16);
-    return val;
-  }
 }

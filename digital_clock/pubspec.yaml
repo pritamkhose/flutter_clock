@@ -30,9 +30,6 @@ flutter:
     - assets/iconfinder_Thermometer_Hot_3741361.png
     - assets/iconfinder_Thermometer_Warm_3741363.png
   fonts:
-    - family: PressStart2P
-      fonts:
-        - asset: third_party/PressStart2P-Regular.ttf
     - family: Orbitron
       fonts:
         - asset: third_party/Orbitron-Regular.ttf
